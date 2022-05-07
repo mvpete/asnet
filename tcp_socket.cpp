@@ -89,7 +89,7 @@ void socket::async_write_some(const cbuffer &b, handler_t handler)
 {
     // TODO: operation in progress.
 
-    pwt_=handler;
+    op_=handler;
     tcp_write(pcb_,b.data,b.size,0);
     tcp_output(pcb_);
 }
@@ -115,15 +115,6 @@ void socket::async_err(void *arg, err_t err)
     {
         auto op = s->op_;
         s->op_=nullptr;
-        s->ctx_.post([op, err]()
-        {
-            op(error_code((int)err),0);
-        });
-    }
-    else if (s->pwt_)
-    {
-        auto op = s->pwt_;
-        s->pwt_=nullptr;
         s->ctx_.post([op, err]()
         {
             op(error_code((int)err),0);
@@ -171,14 +162,14 @@ void socket::async_sent_(void * arg, struct tcp_pcb * pcb, uint16_t len)
 
 void socket::async_sent(struct tcp_pcb * pcb, uint16_t len)
 {
-    if(pwt_ == nullptr)
+    if(op_ == nullptr)
         return;
-    auto pwt=pwt_;
+    auto pwt=op_;
     ctx_.post([pwt, len]()
     {
         pwt(error_code{}, len);
     });
-    pwt_=nullptr;
+    op_=nullptr;
 }
 
 void  socket::async_poll(void *arg, struct tcp_pcb * pcb)

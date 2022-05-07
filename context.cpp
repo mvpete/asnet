@@ -31,6 +31,8 @@ size_t context::poll_one(int ticks)
 
 void context::stop()
 {
+    xQueueReset(h_);
+    h_=nullptr;
 }
 
 error_code context::post(fn_t fn, void *ctx)

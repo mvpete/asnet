@@ -50,8 +50,6 @@ namespace tcp
             handler_t h;
         } prd_;
 
-        handler_t pwt_;
-
         StreamBufferHandle_t rbuf_;
 
     private:
